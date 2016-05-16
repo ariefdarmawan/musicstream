@@ -1,0 +1,256 @@
+<script>
+    model.keyword = ko.observable("");
+    model.keyword_ok = ko.observable("");
+    model.mode=ko.observable("");
+    model.fullsearch=ko.observable(true);
+    model.duration=ko.observable("");
+    
+    model.songs=ko.observableArray([]);
+    model.albums=ko.observableArray([]);
+    model.artists=ko.observableArray([]);
+    
+    model.skipSong=ko.observable(0);
+    model.skipAlbum=ko.observable(0);
+    model.skipArtist=ko.observable(0);
+</script>
+
+<style>
+    a{
+        cursor: pointer;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-6 col-md-offset-3">
+        <div class="input-group" id="search_form">
+            <input type="text" class="form form-control" placeholder="enter search keyword" data-bind="value:keyword" />
+            <span class="input-group-addon">
+                <input type="checkbox" id="fullsearch" data-bind="checked:fullsearch"> 
+                Full Phrase
+            </span>
+            <span class="input-group-btn">
+                <button class="btn btn-primary" data-bind="click:search">Search</button>
+            </span>
+        </div>
+    </div>
+</div>    
+
+<div class="row" style="margin-top:50px">
+    <div class="col-md-12" data-bind="visible:mode()=='searching'">
+        <center>... searching ...</center>
+    </div>
+    
+    <div class="col-md-10 col-md-offset-1" data-bind="visible:mode()=='view'">
+        <center>
+            Searching for 
+            <span data-bind="text:keyword" style="font-weight:bold;font-style:italic"></span>
+            <span data-bind="visible:fullsearch" style="font-weight:bold;font-style:italic"> (Full Phrase) </span>. 
+            Time <span data-bind="text:duration"></span>
+        </center>
+        <ul class="nav nav-tabs">
+            <li role="presentation" class="active"><a href="#song" role="tab" data-toggle="tab">Song</a></li>
+            <li role="presentation"><a href="#album" role="tab" data-toggle="tab">Album</a></li>
+            <li role="presentation"><a href="#artist" role="tab" data-toggle="tab">Artist</a></li>
+        </ul>
+        
+         <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="song">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Song</th>
+                            <th>Artist</th>
+                            <th>Album</th>
+                            <th>Popularity</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach:songs">
+                        <tr>
+                            <td data-bind="text:song_name"></td>
+                            <td data-bind="text:artist_name"></td>
+                            <td data-bind="text:album_name"></td>
+                            <td data-bind="text:kendo.format('{0:N0}',popularity)" style="text-align:right"></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2">
+                                <a data-bind="click:prevsong,visible:skipSong()!=0">Prev</a>
+                                &nbsp;|&nbsp;
+                                <a data-bind="click:nextsong,visible:songs().length==10">Next</a>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="album">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Album</th>
+                            <th>Artist</th>
+                            <th>Popularity</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach:albums">
+                        <tr>
+                            <td data-bind="text:album_name"></td>
+                            <td data-bind="text:artist_name"></td>
+                            <td data-bind="text:kendo.format('{0:N0}',popularity)" style="text-align:right"></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2">
+                                <a data-bind="click:prevalbum,visible:skipAlbum()!=0">Prev</a>
+                                &nbsp;|&nbsp;
+                                <a data-bind="click:nextalbum,visible:albums().length==10">Next</a>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="artist">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Artist</th>
+                            <th>Popularity</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach:artists">
+                        <tr>
+                            <td data-bind="text:artist_name"></td>
+                            <td data-bind="text:kendo.format('{0:N0}',popularity)" style="text-align:right"></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2">
+                                <a data-bind="click:prevartist,visible:skipArtist()!=0">Prev</a>
+                                &nbsp;|&nbsp;
+                                <a data-bind="click:nextartist,visible:artists().length==10">Next</a>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>  
+ 
+
+<script>
+    model.search = function(){
+        model.keyword_ok(model.keyword());
+        model.mode("searching");
+        search_do({
+            keyword:model.keyword_ok(),
+            song:1,album:1,artist:1,take:10,skip:0,
+            fullsearch:model.fullsearch()
+        });
+    }
+    
+    model.nextsong = function(){
+        model.mode("searching");
+        search_do({
+            keyword:model.keyword_ok(),
+            song:1,album:0,artist:0,take:10,
+            skip:model.skipSong()+10,
+            fullsearch:model.fullsearch()
+        });
+    }
+    
+    model.prevsong = function(){
+        model.mode("searching");
+        skip=0;
+        if(model.skipSong()>10){
+            skip=model.skipSong()-10;
+        }
+        search_do({
+            keyword:model.keyword_ok(),
+            song:1,album:0,artist:0,take:10,
+            skip:skip,
+            fullsearch:model.fullsearch()
+        });
+    }
+    
+    model.nextalbum = function(){
+        model.mode("searching");
+        search_do({
+            keyword:model.keyword_ok(),
+            album:1,take:10,
+            skip:model.skipAlbum()+10,
+            fullsearch:model.fullsearch()
+        });
+    }
+    
+    model.prevalbum = function(){
+        model.mode("searching");
+        skip=0;
+        if(model.skipAlbum()>10){
+            skip=model.skipAlbum()-10;
+        }
+        search_do({
+            keyword:model.keyword_ok(),
+            album:1,take:10,
+            skip:skip,
+            fullsearch:model.fullsearch()
+        });
+    }
+    
+    model.nextartist = function(){
+        model.mode("searching");
+        search_do({
+            keyword:model.keyword_ok(),
+            artist:1,take:10,
+            skip:model.skipArtist()+10,
+            fullsearch:model.fullsearch()
+        });
+    }
+    
+    model.prevartist = function(){
+        model.mode("searching");
+        skip=0;
+        if(model.skipArtist()>10){
+            skip=model.skipArtist()-10;
+        }
+        search_do({
+            keyword:model.keyword_ok(),
+            artist:1,take:10,
+            skip:skip,
+            fullsearch:model.fullsearch()
+        });
+    }
+    
+    function search_do(obj){
+        var url = "{{BaseUrl}}music/search";
+        ajaxPost(url,obj,function(data){
+            model.duration(data.DurationTxt);
+            if(obj.song==1 && data.Data.song!=undefined){
+                push2ObsArray(model.songs,data.Data.song);
+                model.skipSong(obj.skip);
+            } else if(obj.song==1) {
+                push2ObsArray(model.songs,[]);
+            }
+            
+            if(obj.album==1 && data.Data.album!=undefined){
+                push2ObsArray(model.albums,data.Data.album);
+                model.skipAlbum(obj.skip);
+            } else if(obj.album==1){
+                push2ObsArray(model.albums,[]);
+            }
+            
+            if(obj.artist==1 && data.Data.artist!=undefined){
+                push2ObsArray(model.artists,data.Data.artist);
+                model.skipArtist(obj.skip);
+            } else if(obj.artist==1){
+                push2ObsArray(model.artists,[]);
+            }
+            
+            model.mode("view");
+        },function(obj){
+            model.mode("view");  
+        });
+    }
+</script> 
