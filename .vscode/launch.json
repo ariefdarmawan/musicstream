@@ -21,6 +21,15 @@
 			"program": "${workspaceRoot}/cli/serializer",
 			"env": {},
 			"args": ["-test.v"]
+		},
+        {
+			"name": "tag",
+			"type": "go",
+			"request": "launch",
+			"mode": "debug",
+			"program": "${workspaceRoot}/cli/tag",
+			"env": {},
+			"args": []
 		}
     ]
 }
