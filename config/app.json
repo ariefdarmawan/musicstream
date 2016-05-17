@@ -1,4 +1,5 @@
 {
     "db_host":"localhost:27123",
-    "db_name":"ecmelon"
+    "db_name":"ecmelon",
+    "webapp_port":8027
 }

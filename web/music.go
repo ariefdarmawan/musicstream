@@ -26,7 +26,7 @@ type searchModel struct{
 	Skip int
 }
 
-func (m *Music) Search(ctx *knot.WebContext) interface{} {
+func (m *Music) Search(ctx *knot.WebContext) interface{}{
 	ctx.Config.OutputType = knot.OutputJson
 	result := toolkit.NewResult()
 	
