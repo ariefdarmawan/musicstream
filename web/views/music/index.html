@@ -3,6 +3,7 @@
     model.keyword_ok = ko.observable("");
     model.mode=ko.observable("");
     model.fullsearch=ko.observable(true);
+    model.similarity=ko.observable(false);
     model.duration=ko.observable("");
     
     model.songs=ko.observableArray([]);
@@ -12,6 +13,18 @@
     model.skipSong=ko.observable(0);
     model.skipAlbum=ko.observable(0);
     model.skipArtist=ko.observable(0);
+    
+    model.similarity.subscribe(function(nv){
+        if(nv){
+            model.fullsearch(false);
+        }
+    });
+    
+    model.fullsearch.subscribe(function(nv){
+        if(nv){
+            model.similarity(false);
+        }
+    })
 </script>
 
 <style>
@@ -26,7 +39,7 @@
             <input type="text" class="form form-control" placeholder="enter search keyword" data-bind="value:keyword" />
             <span class="input-group-addon">
                 <input type="checkbox" id="fullsearch" data-bind="checked:fullsearch"> 
-                Full Phrase
+                    Full Phrase
             </span>
             <span class="input-group-btn">
                 <button class="btn btn-primary" data-bind="click:search">Search</button>

@@ -50,8 +50,8 @@ func (m *Music) Search(ctx *knot.WebContext) interface{} {
 	defer conn.Close()
 	
 	mout := toolkit.M{}
+	songs := []toolkit.M{}
 	if sm.Song==1{
-		songs := []toolkit.M{}
 		csong, e := conn.NewQuery().
 			Select("_id","song_name","artist_id","album_id","popularity").
 			From("song").
@@ -69,11 +69,11 @@ func (m *Music) Search(ctx *knot.WebContext) interface{} {
 		if len(songs)>0{
 			getSongs(conn, &songs)
 		}
-		mout.Set("song", songs)
 	}
+	mout.Set("song", songs)	
 	
+	album := []toolkit.M{}
 	if sm.Album==1{
-		album := []toolkit.M{}
 		calbum, e := conn.NewQuery().
 			Select("_id","album_name","main_artist_id","popularity").
 			From("album").
@@ -90,12 +90,12 @@ func (m *Music) Search(ctx *knot.WebContext) interface{} {
 		calbum.Fetch(&album,0,false)
 		if len(album)>0{
 			getAlbum(conn,&album)
-		} 
-		mout.Set("album", album)
+		}
 	}
+	mout.Set("album", album)
 	
+	artist := []toolkit.M{}
 	if sm.Artist==1{
-		artist := []toolkit.M{}
 		cartist, e := conn.NewQuery().
 			Select("_id","artist_name","popularity").
 			From("artist").
@@ -110,8 +110,8 @@ func (m *Music) Search(ctx *knot.WebContext) interface{} {
 		defer cartist.Close()
 		
 		cartist.Fetch(&artist,0,false)
-		mout.Set("artist", artist)
 	}
+	mout.Set("artist", artist)
 	
 	result.SetData(mout)
 	return result
@@ -134,6 +134,7 @@ func getSongs(conn dbox.IConnection, songs *[]toolkit.M){
 			Where(dbox.Eq("_id",song.GetString("artist_id"))).
 			Cursor(nil)
 		cartist.Fetch(&artist,1,false)
+		song["artist_name"]=""
 		if len(artist)>0{
 			song["artist_name"]=artist[0].GetString("artist_name")
 		}
@@ -148,6 +149,7 @@ func getAlbum(conn dbox.IConnection, songs *[]toolkit.M){
 			Where(dbox.Eq("_id",song.GetString("main_artist_id"))).
 			Cursor(nil)
 		cartist.Fetch(&artist,1,false)
+		song["artist_name"]=""
 		if len(artist)>0{
 			song["artist_name"]=artist[0].GetString("artist_name")
 		}
